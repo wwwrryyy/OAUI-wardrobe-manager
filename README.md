@@ -44,13 +44,19 @@ CREATE TABLE USER(
 );
 ```
 
-> [!NOTE]
-> The database connection is configured in `main.py` and `import mysql.py` using:
-> - **Host**: `localhost`
-> - **User**: `root`
-> - **Password**: `student`
-> - **Database**: `ouai`
-> Adjust these credentials in the source code if your local database uses different settings.
+> [!IMPORTANT]
+> The database connection is configured using environment variables. It is highly recommended to use a dedicated, least-privileged application database user instead of the `root` user:
+> - `DB_HOST`: Database host (default: `localhost`)
+> - `DB_USER`: Database username (default: `root`)
+> - `DB_PASSWORD`: Database password (default: `student`)
+> - `DB_NAME`: Database name (default: `ouai`)
+>
+> You can set these in your terminal session before launching the application:
+> ```bash
+> export DB_USER="ouai_user"
+> export DB_PASSWORD="secure_password"
+> ```
+
 
 ### 2. Install Python Dependencies
 Install the required libraries using `pip`:
