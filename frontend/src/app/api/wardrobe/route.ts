@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
     const pool = getPool();
     const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT ITEM_ID, USER_ID, CATEGORY, IMAGE_PATH FROM WARDROBE_ITEM WHERE USER_ID = ? ORDER BY ITEM_ID DESC',
+      'SELECT ITEM_ID, USER_ID, CATEGORY, IMAGE_PATH FROM `WARDROBE_ITEM` WHERE USER_ID = ? ORDER BY ITEM_ID DESC',
       [userId]
     );
 
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     const pool = getPool();
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO WARDROBE_ITEM (USER_ID, CATEGORY, IMAGE_PATH) VALUES (?, ?, ?)',
+      'INSERT INTO `WARDROBE_ITEM` (USER_ID, CATEGORY, IMAGE_PATH) VALUES (?, ?, ?)',
       [userId, category, imagePath]
     );
 
@@ -76,7 +76,7 @@ export async function DELETE(req: Request) {
     }
 
     const pool = getPool();
-    await pool.query('DELETE FROM WARDROBE_ITEM WHERE ITEM_ID = ?', [itemId]);
+    await pool.query('DELETE FROM `WARDROBE_ITEM` WHERE ITEM_ID = ?', [itemId]);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

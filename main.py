@@ -23,6 +23,26 @@ if not db_password:
     root_temp.destroy()
     raise RuntimeError("DB_PASSWORD environment variable must be set.")
 
+con_init = None
+try:
+    con_init = m.connect(
+        host=db_host,
+        user=db_user,
+        passwd=db_password,
+        auth_plugin='mysql_native_password'
+    )
+    c_init = con_init.cursor()
+    c_init.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}`")
+    con_init.commit()
+except Exception:
+    pass
+finally:
+    if con_init:
+        try:
+            con_init.close()
+        except Exception:
+            pass
+
 try:
     con = m.connect(
         host=db_host,
@@ -32,6 +52,27 @@ try:
         auth_plugin='mysql_native_password'
     )
     c = con.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS `USER` (
+        USER_ID INT AUTO_INCREMENT PRIMARY KEY,
+        USERNAME VARCHAR(18) UNIQUE NOT NULL,
+        PASSWORD_HASH VARCHAR(255) NOT NULL
+    )''')
+    try:
+        c.execute("ALTER TABLE `USER` ADD COLUMN IF NOT EXISTS PASSWORD_HASH VARCHAR(255) NOT NULL")
+    except Exception:
+        pass
+    try:
+        c.execute("ALTER TABLE `USER` MODIFY COLUMN PASSWORD_HASH VARCHAR(255) NOT NULL")
+    except Exception:
+        pass
+    c.execute('''CREATE TABLE IF NOT EXISTS `WARDROBE_ITEM` (
+        ITEM_ID INT AUTO_INCREMENT PRIMARY KEY,
+        USER_ID INT NOT NULL,
+        CATEGORY VARCHAR(20) NOT NULL,
+        IMAGE_PATH VARCHAR(255) NOT NULL,
+        FOREIGN KEY (USER_ID) REFERENCES `USER`(USER_ID) ON DELETE CASCADE
+    )''')
+    con.commit()
 except Exception as e:
     root_temp = tk.Tk()
     root_temp.withdraw()
@@ -121,14 +162,14 @@ def signup():
             return
 
         # Check if user already exists
-        c.execute("SELECT USER_ID FROM USER WHERE USERNAME = %s", (username,))
+        c.execute("SELECT USER_ID FROM `USER` WHERE USERNAME = %s", (username,))
         if c.fetchone():
             l_err = tk.Label(frame, text="Username already exists", fg="red")
             l_err.grid(row=3, column=0)
             return
 
         password_hash = hash_password(password)
-        q = "INSERT INTO USER(USERNAME, PASSWORD_HASH) VALUES(%s, %s)"
+        q = "INSERT INTO `USER`(USERNAME, PASSWORD_HASH) VALUES(%s, %s)"
         c.execute(q, (username, password_hash))
         con.commit()
         print("record inserted")
@@ -162,7 +203,7 @@ def login():
         username_main = e1.get().strip()
         password = e2.get().strip()
         
-        c.execute("SELECT USER_ID, PASSWORD_HASH FROM USER WHERE USERNAME = %s", (username_main,))
+        c.execute("SELECT USER_ID, PASSWORD_HASH FROM `USER` WHERE USERNAME = %s", (username_main,))
         data = c.fetchall()
         if data and verify_password(data[0][1], password):
             user_id_main = data[0][0]
@@ -216,7 +257,7 @@ def table_entry():
         def top_entry():
             path = e.get().strip()
             if path and path != 'Enter Tops Path':
-                c.execute("INSERT INTO WARDROBE_ITEM (USER_ID, CATEGORY, IMAGE_PATH) VALUES (%s, 'top', %s)", (user_id_main, path))
+                c.execute("INSERT INTO `WARDROBE_ITEM` (USER_ID, CATEGORY, IMAGE_PATH) VALUES (%s, 'top', %s)", (user_id_main, path))
                 con.commit()
             top2.destroy()
             top.deiconify()
@@ -248,7 +289,7 @@ def table_entry():
         def shoes_entry():
             path = e.get().strip()
             if path and path != 'Enter Shoes Path':
-                c.execute("INSERT INTO WARDROBE_ITEM (USER_ID, CATEGORY, IMAGE_PATH) VALUES (%s, 'shoes', %s)", (user_id_main, path))
+                c.execute("INSERT INTO `WARDROBE_ITEM` (USER_ID, CATEGORY, IMAGE_PATH) VALUES (%s, 'shoes', %s)", (user_id_main, path))
                 con.commit()
             top4.destroy()
             top.deiconify()
@@ -280,7 +321,7 @@ def table_entry():
         def bottom_entry():
             path = e.get().strip()
             if path and path != 'Enter Bottoms Path':
-                c.execute("INSERT INTO WARDROBE_ITEM (USER_ID, CATEGORY, IMAGE_PATH) VALUES (%s, 'bottom', %s)", (user_id_main, path))
+                c.execute("INSERT INTO `WARDROBE_ITEM` (USER_ID, CATEGORY, IMAGE_PATH) VALUES (%s, 'bottom', %s)", (user_id_main, path))
                 con.commit()
             top3.destroy()
             top.deiconify()
@@ -302,7 +343,7 @@ def table_entry():
     button3.grid(row=0, column=2)
 
 def shuffler():
-    c.execute("SELECT CATEGORY, IMAGE_PATH FROM WARDROBE_ITEM WHERE USER_ID = %s", (user_id_main,))
+    c.execute("SELECT CATEGORY, IMAGE_PATH FROM `WARDROBE_ITEM` WHERE USER_ID = %s", (user_id_main,))
     items = c.fetchall()
     if not items:
         print("No outfits found.")

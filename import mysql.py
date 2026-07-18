@@ -24,18 +24,26 @@ con = m.connect(host=db_host, user=db_user, password=db_password, database=db_na
 c = con.cursor()
 
 def create_tables():
-    c.execute('''CREATE TABLE IF NOT EXISTS USER (
+    c.execute('''CREATE TABLE IF NOT EXISTS `USER` (
         USER_ID INT AUTO_INCREMENT PRIMARY KEY,
         USERNAME VARCHAR(18) UNIQUE NOT NULL,
         PASSWORD_HASH VARCHAR(255) NOT NULL
     )''')
+    try:
+        c.execute("ALTER TABLE `USER` ADD COLUMN IF NOT EXISTS PASSWORD_HASH VARCHAR(255) NOT NULL")
+    except Exception:
+        pass
+    try:
+        c.execute("ALTER TABLE `USER` MODIFY COLUMN PASSWORD_HASH VARCHAR(255) NOT NULL")
+    except Exception:
+        pass
     
-    c.execute('''CREATE TABLE IF NOT EXISTS WARDROBE_ITEM (
+    c.execute('''CREATE TABLE IF NOT EXISTS `WARDROBE_ITEM` (
         ITEM_ID INT AUTO_INCREMENT PRIMARY KEY,
         USER_ID INT NOT NULL,
         CATEGORY VARCHAR(20) NOT NULL,
         IMAGE_PATH VARCHAR(255) NOT NULL,
-        FOREIGN KEY (USER_ID) REFERENCES USER(USER_ID) ON DELETE CASCADE
+        FOREIGN KEY (USER_ID) REFERENCES `USER`(USER_ID) ON DELETE CASCADE
     )''')
     con.commit()
 

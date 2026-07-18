@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     if (action === 'signup') {
       // Check if username already exists
       const [existing] = await pool.query<RowDataPacket[]>(
-        'SELECT USER_ID FROM USER WHERE USERNAME = ?',
+        'SELECT USER_ID FROM `USER` WHERE USERNAME = ?',
         [username]
       );
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
       const passwordHash = hashPassword(password);
       const [result] = await pool.query<ResultSetHeader>(
-        'INSERT INTO USER (USERNAME, PASSWORD_HASH) VALUES (?, ?)',
+        'INSERT INTO `USER` (USERNAME, PASSWORD_HASH) VALUES (?, ?)',
         [username, passwordHash]
       );
 
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       });
     } else if (action === 'login') {
       const [rows] = await pool.query<RowDataPacket[]>(
-        'SELECT USER_ID, USERNAME, PASSWORD_HASH FROM USER WHERE USERNAME = ?',
+        'SELECT USER_ID, USERNAME, PASSWORD_HASH FROM `USER` WHERE USERNAME = ?',
         [username]
       );
 
