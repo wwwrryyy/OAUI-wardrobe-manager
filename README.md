@@ -17,7 +17,7 @@ OUAI (Outfit Selector / Wardrobe Organizer) is a Python-based desktop applicatio
 ## 📂 Project Structure
 
 ```text
-Projet1.0/
+OUAI-wardobe-manager/
 ├── main.py                # Main application entry point containing Tkinter UI and logic
 ├── import mysql.py        # Helper setup script to initialize database and tables
 ├── SQL MAIN.txt           # Raw SQL queries for database and user schema setup
